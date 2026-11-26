@@ -35,7 +35,13 @@ jobs:
 
 
       - name: Build APK
-        run: gradle :app:assembleDebug
+        run: |
+  echo "=== GRADLE PROJECTS ==="
+  gradle projects
+  echo "=== APP TASKS ==="
+  gradle :app:tasks --all
+  echo "=== APP BUILD FILE ==="
+  cat app/build.gradle
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
