@@ -29,19 +29,17 @@ jobs:
       - name: Install Android SDK
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
-          ls -la "$ANDROID_HOME/cmdline-tools"
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
+      - name: Check Android Tasks
+        run: |
+          gradle projects
+          gradle :app:tasks --all
+          cat app/build.gradle
 
       - name: Build APK
-        run: |
-  echo "=== GRADLE PROJECTS ==="
-  gradle projects
-  echo "=== APP TASKS ==="
-  gradle :app:tasks --all
-  echo "=== APP BUILD FILE ==="
-  cat app/build.gradle
+        run: gradle :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
