@@ -33,12 +33,15 @@ jobs:
           echo "SDKMANAGER=$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses || true
           "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
-
-      - name: Check Android Tasks
+     - name: Check Android Tasks
         run: |
-          gradle projects
-          gradle :app:tasks --all
-          cat app/build.gradle
+          echo "=== ROOT DIRECTORY ==="
+          pwd
+          ls -la
+          echo "=== APP DIRECTORY ==="
+          ls -la app
+          echo "=== ALL PROJECT FILES ==="
+          find . -maxdepth 6 -type f | sort
 
       - name: Build APK
         run: gradle :app:assembleDebug
