@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -26,19 +28,28 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Check Project Files
+      - name: Check Repository Structure
         run: |
-          echo "=== ROOT DIRECTORY ==="
-          pwd
+          echo "=== BRANCH ==="
+          git branch --show-current
+          echo "=== COMMIT ==="
+          git log -1 --oneline
+          echo "=== ROOT FILES ==="
           ls -la
-          echo "=== APP DIRECTORY ==="
-          ls -la app || true
-          echo "=== PROJECT FILES ==="
-          find . -maxdepth 7 -type f | sort
+          echo "=== APP FILES ==="
+          ls -la app
+          echo "=== ANDROID FILES ==="
+          find app -maxdepth 5 -type f -print
+          echo "=== APP BUILD GRADLE ==="
+          if [ -f app/build.gradle ]; then
+            cat app/build.gradle
+          else
+            echo "ERROR: app/build.gradle NOT FOUND"
+            exit 1
+          fi
 
       - name: Install Android SDK
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
           SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
           if [ -z "$SDKMANAGER" ]; then
             echo "ERROR: sdkmanager not found"
@@ -47,18 +58,10 @@ jobs:
           yes | "$SDKMANAGER" --licenses || true
           "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
-            - name: Verify Android Module
+      - name: Verify Gradle Android Tasks
         run: |
-          echo "=== CURRENT BRANCH ==="
-          git branch --show-current
-          echo "=== COMMIT ==="
-          git log -1 --oneline
-          echo "=== ROOT FILES ==="
-          git ls-tree HEAD
-          echo "=== APP FILES ==="
-          git ls-tree HEAD:app
-          echo "=== BUILD FILE CONTENT ==="
-          git show HEAD:app/build.gradle
+          gradle projects
+          gradle :app:tasks --all
 
       - name: Build APK
         run: gradle :app:assembleDebug
