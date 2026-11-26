@@ -26,22 +26,33 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      
-      - name: Install Android SDK
-        run: |
-          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
-          echo "SDKMANAGER=$SDKMANAGER"
-          yes | "$SDKMANAGER" --licenses || true
-          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
-     - name: Check Android Tasks
+      - name: Check Project Files
         run: |
           echo "=== ROOT DIRECTORY ==="
           pwd
           ls -la
           echo "=== APP DIRECTORY ==="
-          ls -la app
-          echo "=== ALL PROJECT FILES ==="
-          find . -maxdepth 6 -type f | sort
+          ls -la app || true
+          echo "=== PROJECT FILES ==="
+          find . -maxdepth 7 -type f | sort
+
+      - name: Install Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
+          if [ -z "$SDKMANAGER" ]; then
+            echo "ERROR: sdkmanager not found"
+            exit 1
+          fi
+          yes | "$SDKMANAGER" --licenses || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - name: Verify Android Module
+        run: |
+          echo "=== SETTINGS ==="
+          cat settings.gradle
+          echo "=== APP BUILD FILE ==="
+          cat app/build.gradle
 
       - name: Build APK
         run: gradle :app:assembleDebug
