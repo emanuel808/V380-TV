@@ -47,12 +47,18 @@ jobs:
           yes | "$SDKMANAGER" --licenses || true
           "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
-      - name: Verify Android Module
+            - name: Verify Android Module
         run: |
-          echo "=== SETTINGS ==="
-          cat settings.gradle
-          echo "=== APP BUILD FILE ==="
-          cat app/build.gradle
+          echo "=== CURRENT BRANCH ==="
+          git branch --show-current
+          echo "=== COMMIT ==="
+          git log -1 --oneline
+          echo "=== ROOT FILES ==="
+          git ls-tree HEAD
+          echo "=== APP FILES ==="
+          git ls-tree HEAD:app
+          echo "=== BUILD FILE CONTENT ==="
+          git show HEAD:app/build.gradle
 
       - name: Build APK
         run: gradle :app:assembleDebug
